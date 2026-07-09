@@ -5,9 +5,9 @@
 import { NextResponse } from "next/server";
 
 export async function GET(): Promise<Response> {
-  return NextResponse.json({ message: "NextAuth not configured yet - Day 5" });
+  return NextResponse.json({ message: "NextAuth not configured yet — Day 5" });
 }
 
 export async function POST(): Promise<Response> {
-  return NextResponse.json({ message: "NextAuth not configured yet - Day 5" });
+  return NextResponse.json({ message: "NextAuth not configured yet — Day 5" });
 }
