@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DocSlot — Book Smarter. Care Faster.",
-  description: "Smart doctor appointment booking system.",
+  description: "DocSlot is the smarter way to schedule doctor appointments and manage care.",
 };
 
 export default function RootLayout({
