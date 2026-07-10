@@ -12,6 +12,7 @@ model User {
   email     String   @unique
   name      String?
   createdAt DateTime @default(now())
+  Doctor    Doctor?
 }
 
 model Schedule {
@@ -23,4 +24,41 @@ model Schedule {
   slotDuration Int      @default(30)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
+}
+
+model Doctor {
+  id        String       @id @default(cuid())
+  userId    Int?         @unique
+  user      User?        @relation(fields: [userId], references: [id])
+  name      String?
+  createdAt DateTime     @default(now())
+  appointments Appointment[]
+}
+
+model Patient {
+  id        String       @id @default(cuid())
+  name      String?
+  createdAt DateTime     @default(now())
+  appointments Appointment[]
+}
+
+model Slot {
+  id        String       @id @default(cuid())
+  startTime String
+  endTime   String
+  createdAt DateTime     @default(now())
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  patientId String
+  doctorId  String
+  slotId    String
+  status    String
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+  slot    Slot    @relation(fields: [slotId], references: [id])
 }
