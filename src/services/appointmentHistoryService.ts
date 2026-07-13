@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-
 const PAGE_SIZE = 10;
 
 export async function getAppointmentHistory(patientId: string, cursor?: string) {
