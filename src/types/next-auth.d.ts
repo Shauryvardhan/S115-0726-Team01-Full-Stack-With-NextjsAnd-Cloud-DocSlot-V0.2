@@ -7,4 +7,15 @@ declare module "next-auth" {
       role: "DOCTOR" | "PATIENT";
     } & DefaultSession["user"];
   }
+
+  interface User {
+    role?: "DOCTOR" | "PATIENT";
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    role?: "DOCTOR" | "PATIENT";
+  }
 }
