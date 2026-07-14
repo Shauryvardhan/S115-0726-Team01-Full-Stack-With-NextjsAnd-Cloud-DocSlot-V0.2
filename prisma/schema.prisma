@@ -7,6 +7,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  doctor    Doctor?
+  patient   Patient?
+}
+
+model Doctor {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  specialization  String
+  qualifications  String?
+  bio             String?
+  consultationFee Decimal       @db.Decimal(10, 2)
+  status          DoctorStatus  @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  appointments    Appointment[]
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules       Schedule[]
+}
+
+model Patient {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  dateOfBirth  DateTime?
+  gender       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Schedule {
+  id           String            @id @default(cuid())
+  doctorId     String
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  slotDuration Int               @default(30)
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  slots        AppointmentSlot[]
+  doctor       Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId, dayOfWeek])
+}
+
+model AppointmentSlot {
+  id          String       @id @default(cuid())
+  scheduleId  String
+  date        DateTime
+  startTime   String
+  endTime     String
+  isBooked    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  appointment Appointment?
+  schedule    Schedule     @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, date, startTime])
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patientId String
+  doctorId  String
+  slotId    String            @unique
+  status    AppointmentStatus @default(CONFIRMED)
+  reason    String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  doctor    Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  slot      AppointmentSlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt])
+  @@index([doctorId, createdAt])
+}
+
 enum Role {
   DOCTOR
   PATIENT
@@ -22,100 +108,4 @@ enum AppointmentStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
-}
-
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  phone     String?
-  role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  doctor  Doctor?
-  patient Patient?
-}
-
-model Doctor {
-  id              String       @id @default(cuid())
-  userId          String       @unique
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specialization  String
-  qualifications  String?
-  bio             String?
-  consultationFee Decimal      @db.Decimal(10, 2)
-  status          DoctorStatus @default(PENDING)
-
-  schedules    Schedule[]
-  appointments Appointment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Patient {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dateOfBirth DateTime?
-  gender      String?
-
-  appointments Appointment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Schedule {
-  id           String  @id @default(cuid())
-  doctorId     String
-  doctor       Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  dayOfWeek    Int
-  startTime    String
-  endTime      String
-  slotDuration Int     @default(30)
-  isActive     Boolean @default(true)
-
-  slots AppointmentSlot[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([doctorId, dayOfWeek])
-}
-
-model AppointmentSlot {
-  id         String   @id @default(cuid())
-  scheduleId String
-  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  date       DateTime
-  startTime  String
-  endTime    String
-  isBooked   Boolean  @default(false)
-
-  appointment Appointment?
-
-  createdAt DateTime @default(now())
-
-  @@unique([scheduleId, date, startTime])
-}
-
-model Appointment {
-  id        String            @id @default(cuid())
-  patientId String
-  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctorId  String
-  doctor    Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  slotId    String            @unique
-  slot      AppointmentSlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  status    AppointmentStatus @default(CONFIRMED)
-  reason    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([patientId, createdAt])
-  @@index([doctorId, createdAt])
 }

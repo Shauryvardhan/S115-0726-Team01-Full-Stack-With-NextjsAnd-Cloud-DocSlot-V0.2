@@ -10,8 +10,10 @@ export async function registerUser(input: RegisterInput) {
     return { success: false, errors: parsed.error.flatten().fieldErrors };
   }
 
+  const normalizedEmail = parsed.data.email.trim().toLowerCase();
+
   const existing = await prisma.user.findUnique({
-    where: { email: parsed.data.email },
+    where: { email: normalizedEmail },
   });
   if (existing) {
     return { success: false, errors: { email: ["Email already registered"] } };
@@ -22,7 +24,7 @@ export async function registerUser(input: RegisterInput) {
   const user = await prisma.user.create({
     data: {
       name: parsed.data.name,
-      email: parsed.data.email,
+      email: normalizedEmail,
       password: hashedPassword,
       phone: parsed.data.phone,
       role: parsed.data.role,

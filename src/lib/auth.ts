@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret-change-me",
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
@@ -11,10 +13,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {},
       },
       async authorize(credentials) {
-        const email = credentials.email as string;
+        const email = (credentials.email as string | undefined)?.trim().toLowerCase();
         const password = credentials.password as string;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        if (!email || !password) return null;
+
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: email, mode: "insensitive" } },
+        });
         if (!user) return null;
 
         const valid = await bcrypt.compare(password, user.password);
