@@ -1,18 +1,20 @@
 import { createWeeklySchedule, getDoctorSchedules } from "@/services/scheduleService";
+import { generateSlotsForSchedule } from "@/services/slotService";
 
 async function main() {
-  const doctorId = "cmrkm41nd0001ow1hmsf92trr";
+  const doctorId = "cmrllp1pu0001zmp2ffji4qxu";
 
   const schedule = await createWeeklySchedule({
     doctorId,
     dayOfWeek: 1,
     startTime: "09:00",
-    endTime: "17:00",
+    endTime: "12:00",
+    slotDuration: 30,
   });
-  console.log("Created:", schedule);
+  console.log("Schedule created:", schedule);
 
-  const all = await getDoctorSchedules(doctorId);
-  console.log("All schedules:", all);
+  const result = await generateSlotsForSchedule(schedule.id);
+  console.log("Slots generated:", result);
 }
 
 main();
