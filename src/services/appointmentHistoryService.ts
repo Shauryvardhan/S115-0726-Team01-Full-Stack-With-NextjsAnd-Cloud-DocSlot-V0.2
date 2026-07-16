@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
+
 const PAGE_SIZE = 10;
 
 export async function getAppointmentHistory(patientId: string, cursor?: string) {
   const appointments = await prisma.appointment.findMany({
     where: { patientId },
-    take: PAGE_SIZE + 1, // fetch one extra to know if there's a next page
+    take: PAGE_SIZE + 1,
     ...(cursor && {
       cursor: { id: cursor },
-      skip: 1, // skip the cursor item itself, we already saw it
+      skip: 1,
     }),
     orderBy: { createdAt: "desc" },
     include: {
