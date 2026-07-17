@@ -42,3 +42,15 @@ export async function generateSlotsForSchedule(scheduleId: string, weeksAhead: n
     skipDuplicates: true,
   });
 }
+
+export async function regenerateSlotsForSchedule(scheduleId: string, weeksAhead: number = 4) {
+  await prisma.appointmentSlot.deleteMany({
+    where: {
+      scheduleId,
+      isBooked: false,
+      date: { gte: new Date() },
+    },
+  });
+
+  return generateSlotsForSchedule(scheduleId, weeksAhead);
+}
