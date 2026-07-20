@@ -1,6 +1,6 @@
-import { prisma } from "../src/lib/prisma";
-import { getAppointmentHistory } from "../src/services/appointmentHistoryService";
-import { cancelAppointment } from "../src/actions/appointmentActions";
+import { prisma } from "../lib/prisma";
+import { getAppointmentHistory } from "../services/appointmentHistoryService";
+import { cancelAppointment } from "../actions/appointmentActions";
 
 async function main() {
   const patient = await prisma.patient.findFirst();

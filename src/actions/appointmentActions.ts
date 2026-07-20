@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getAppointmentHistory } from "@/services/appointmentHistoryService";
+import { getAppointmentHistory, isCancellable } from "@/services/appointmentHistoryService";
 
 export async function fetchAppointmentHistory(patientId: string, cursor?: string) {
   return getAppointmentHistory(patientId, cursor);
@@ -10,6 +10,7 @@ export async function fetchAppointmentHistory(patientId: string, cursor?: string
 export async function cancelAppointment(appointmentId: string, patientId: string) {
   const appointment = await prisma.appointment.findUnique({
     where: { id: appointmentId },
+    include: { slot: true },
   });
 
   if (!appointment) {
@@ -20,8 +21,8 @@ export async function cancelAppointment(appointmentId: string, patientId: string
     return { success: false, error: "Not authorized to cancel this appointment" };
   }
 
-  if (appointment.status === "CANCELLED") {
-    return { success: false, error: "Appointment already cancelled" };
+  if (!isCancellable(appointment)) {
+    return { success: false, error: "This appointment can no longer be cancelled" };
   }
 
   await prisma.appointment.update({
