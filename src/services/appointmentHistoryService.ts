@@ -23,3 +23,8 @@ export async function getAppointmentHistory(patientId: string, cursor?: string) 
 
   return { items, nextCursor };
 }
+
+export function isCancellable(appointment: { status: string; slot: { date: Date } }) {
+  if (appointment.status !== "CONFIRMED") return false;
+  return appointment.slot.date >= new Date();
+}
