@@ -38,6 +38,9 @@
 //   console.log("Sample slot IDs after update:", slotsAfter.slice(0, 3).map(s => s.id));
 // }
 
+//This script checks that a booked slot is not deleted when the schedule is updated. It also prints the total number of slots and the number of booked slots after the update.
+// Hence all these are comented out because we are not testing the schedule creation and update here, we are just checking the booked slot after the update.
+
 // main();
 import { prisma } from "@/lib/prisma";
 

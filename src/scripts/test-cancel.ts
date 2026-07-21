@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma";
 import { getAppointmentHistory } from "../services/appointmentHistoryService";
 import { cancelAppointment } from "../actions/appointmentActions";
 
+
 async function main() {
   const patient = await prisma.patient.findFirst();
 
@@ -9,7 +10,6 @@ async function main() {
     console.log("No patient found — run your seed scripts first.");
     return;
   }
-
   // Grab a real appointment that isn't already cancelled
   const history = await getAppointmentHistory(patient.id);
   const target = history.items.find((a) => a.status !== "CANCELLED");
@@ -18,7 +18,6 @@ async function main() {
     console.log("No non-cancelled appointment found to test with. Re-run seed-history.ts to get fresh data.");
     return;
   }
-
   console.log("Target appointment:", target.id, "| current status:", target.status);
   console.log("Real patientId:", patient.id);
 
@@ -40,7 +39,6 @@ async function main() {
     console.log("\nNo second appointment available to test the fake-patientId case. Seed more data if you want to test this too.");
     return;
   }
-
   // Case 2 — wrong/fake patientId, should fail with "not authorized"
   const fakePatientId = "fake-patient-id-does-not-exist";
   const wrongResult = await cancelAppointment(secondTarget.id, fakePatientId);

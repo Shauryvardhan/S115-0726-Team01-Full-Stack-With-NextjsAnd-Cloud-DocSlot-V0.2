@@ -1,6 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { cancelAppointment } from "../actions/appointmentActions";
-
+// Only run this script after seeding your database with appointments for a patient. It will attempt to cancel a completed appointment and a confirmed future appointment, and check the status of the future appointment after the cancellation attempt.
 async function main() {
   const patient = await prisma.patient.findFirst();
   if (!patient) {
