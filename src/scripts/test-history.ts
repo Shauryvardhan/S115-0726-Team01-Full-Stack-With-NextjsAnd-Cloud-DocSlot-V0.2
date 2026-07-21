@@ -1,6 +1,6 @@
-import { prisma } from "../src/lib/prisma";
-import { getAppointmentHistory } from "../src/services/appointmentHistoryService";
-
+import { prisma } from "../lib/prisma";
+import { getAppointmentHistory } from "../services/appointmentHistoryService";
+// Only run this script after seeding your database with appointments for a patient. It will fetch the first page of appointments, then fetch the second page using the cursor from the first page, and check for any overlap between the two pages.
 async function main() {
   const patient = await prisma.patient.findFirst();
 
@@ -35,7 +35,6 @@ async function main() {
   console.log("\n--- CHECK ---");
   console.log(overlap.length === 0 ? "✅ No overlap — pagination is working." : `❌ Overlap found: ${overlap.length} repeated item(s)`);
 }
-
 main()
   .catch((e) => console.error(e))
   .finally(() => prisma.$disconnect());
