@@ -1,13 +1,57 @@
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import BookingForm from "@/components/appointment/BookingForm";
+
 export default async function BookAppointmentPage({
   params,
 }: {
   params: Promise<{ doctorId: string }>;
 }) {
   const { doctorId } = await params;
+
+  const session = await auth();
+  if (!session) redirect("/login");
+
+  const patient = await prisma.patient.findUnique({
+    where: { userId: session.user.id },
+  });
+  if (!patient) {
+    return <p className="text-gray-500">No patient profile found for this account.</p>;
+  }
+
+  const doctor = await prisma.doctor.findUnique({
+    where: { id: doctorId },
+    include: { user: true },
+  });
+  if (!doctor) notFound();
+
+  const today = new Date();
+  const futureDate = new Date();
+  futureDate.setDate(today.getDate() + 28);
+
+  const slots = await prisma.appointmentSlot.findMany({
+    where: {
+      schedule: { doctorId },
+      isBooked: false,
+      date: { gte: today, lte: futureDate },
+    },
+    orderBy: [{ date: "asc" }, { startTime: "asc" }],
+  });
+
+  const slotsByDate = slots.reduce((acc, slot) => {
+    const dateKey = slot.date.toISOString().split("T")[0];
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(slot);
+    return acc;
+  }, {} as Record<string, typeof slots>);
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Book Appointment with {doctorId}</h1>
-      <p className="text-gray-500">Calendar + slot picker go here (Day 14).</p>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-1">Book with Dr. {doctor.user.name}</h1>
+      <p className="text-gray-500 mb-6">{doctor.specialization}</p>
+
+      <BookingForm doctorId={doctorId} patientId={patient.id} slotsByDate={slotsByDate} />
     </div>
   );
 }
