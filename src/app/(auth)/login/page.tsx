@@ -30,32 +30,43 @@ export default function LoginPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 w-full max-w-sm space-y-4">
-      <h1 className="text-2xl font-bold">Login — DocSlot</h1>
+    <div className="min-h-screen grid grid-cols-2 w-full">
+      <div className="bg-blue-900 text-white p-12 flex flex-col justify-end">
+        <p className="font-bold text-xl mb-2">DocSlot</p>
+        <h2 className="text-2xl font-bold mb-2">Join the healthcare revolution</h2>
+        <p className="text-sm text-blue-100">
+          Experience seamless healthcare management with our platform.
+        </p>
+      </div>
+      <div className="flex items-center justify-center p-8">
+        <form onSubmit={handleSubmit} className="p-8 w-full max-w-sm space-y-4">
+          <h1 className="text-2xl font-bold">Login — DocSlot</h1>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full border rounded px-3 py-2"
-        required
-      />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            required
+          />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full border rounded px-3 py-2"
-        required
-      />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            required
+          />
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <button type="submit" className="w-full bg-blue-600 text-white rounded px-3 py-2">
-        Login
-      </button>
-    </form>
+          <button type="submit" className="w-full bg-blue-600 text-white rounded px-3 py-2 cursor-pointer font-medium">
+            Login
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
