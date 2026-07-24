@@ -10,8 +10,19 @@ export default async function AppointmentHistoryPage() {
   if (!patient) return <p className="text-gray-500">No patient profile found.</p>;
 
   const { items, nextCursor } = await fetchAppointmentHistory(patient.id);
-  const upcoming = items.filter((a) => a.status === "CONFIRMED" && new Date(a.slot.date) >= new Date());
-  const past = items.filter((a) => a.status !== "CONFIRMED" || new Date(a.slot.date) < new Date());
+
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const upcoming = items.filter((a) => a.status === "CONFIRMED" && new Date(a.slot.date) >= startOfToday);
+  const past = items.filter((a) => a.status !== "CONFIRMED" || new Date(a.slot.date) < startOfToday);
+
+  const pastSerializable = past.map((a) => ({
+    id: a.id,
+    status: a.status,
+    slot: { date: a.slot.date, startTime: a.slot.startTime },
+    doctor: { user: { name: a.doctor.user.name } },
+  }));
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -33,7 +44,7 @@ export default async function AppointmentHistoryPage() {
       </div>
 
       <h2 className="font-semibold text-gray-700 mb-2">Past Appointments</h2>
-      <HistoryList initialItems={past} initialCursor={nextCursor} patientId={patient.id} />
+      <HistoryList initialItems={pastSerializable} initialCursor={nextCursor} patientId={patient.id} />
     </div>
   );
 }

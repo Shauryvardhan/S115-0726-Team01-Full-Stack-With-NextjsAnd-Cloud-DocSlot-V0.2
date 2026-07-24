@@ -27,8 +27,10 @@ export default async function BookAppointmentPage({
   if (!doctor) notFound();
 
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const futureDate = new Date();
   futureDate.setDate(today.getDate() + 28);
+  futureDate.setHours(23, 59, 59, 999);
 
   const slots = await prisma.appointmentSlot.findMany({
     where: {
@@ -39,8 +41,15 @@ export default async function BookAppointmentPage({
     orderBy: [{ date: "asc" }, { startTime: "asc" }],
   });
 
+  function toLocalDateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
   const slotsByDate = slots.reduce((acc, slot) => {
-    const dateKey = slot.date.toISOString().split("T")[0];
+  const dateKey = toLocalDateKey(slot.date);
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(slot);
     return acc;
