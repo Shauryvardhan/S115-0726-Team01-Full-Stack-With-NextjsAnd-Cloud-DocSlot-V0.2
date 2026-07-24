@@ -1,7 +1,9 @@
 # Day 15 — Full Integration Test Bug Log
 
 ## Journey 1 (Aamir — Search/Profile/Booking/History)
-
+- No bugs found in Search → Profile → Booking → History flow.
+- Bio/qualifications not shown for test doctor — expected (empty test data), page correctly hides empty sections.
+- Load More pagination not tested — fresh account had too few appointments to trigger it.
 
 ## Journey 2 (Shauryvardhan — Doctor Schedule/Dashboard)
 
