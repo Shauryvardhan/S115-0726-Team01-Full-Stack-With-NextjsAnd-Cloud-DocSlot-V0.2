@@ -9,9 +9,10 @@ export default async function PatientLayout({
 }) {
   const session = await auth();
 
-  if (!session || session.user.role !== "PATIENT") {
+  if (!session) {
     redirect("/login");
   }
+  if (session.user.role !== "PATIENT") redirect("/doctor/dashboard");
 
   return (
     <div className="flex min-h-screen">

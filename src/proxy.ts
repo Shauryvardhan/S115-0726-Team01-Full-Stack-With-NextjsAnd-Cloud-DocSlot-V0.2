@@ -14,11 +14,15 @@ export default auth((req) => {
   }
 
   if (isDoctorRoute && session?.user.role !== "DOCTOR") {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(
+      new URL(session ? "/patient/dashboard" : "/login", req.url)
+    );
   }
 
   if (isPatientRoute && session?.user.role !== "PATIENT") {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(
+      new URL(session ? "/doctor/dashboard" : "/login", req.url)
+    );
   }
 
   return NextResponse.next();
