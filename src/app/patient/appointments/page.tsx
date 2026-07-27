@@ -17,13 +17,6 @@ export default async function AppointmentHistoryPage() {
   const upcoming = items.filter((a) => a.status === "CONFIRMED" && new Date(a.slot.date) >= startOfToday);
   const past = items.filter((a) => a.status !== "CONFIRMED" || new Date(a.slot.date) < startOfToday);
 
-  const pastSerializable = past.map((a) => ({
-    id: a.id,
-    status: a.status,
-    slot: { date: a.slot.date, startTime: a.slot.startTime },
-    doctor: { user: { name: a.doctor.user.name } },
-  }));
-
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Appointments</h1>
@@ -44,7 +37,7 @@ export default async function AppointmentHistoryPage() {
       </div>
 
       <h2 className="font-semibold text-gray-700 mb-2">Past Appointments</h2>
-      <HistoryList initialItems={pastSerializable} initialCursor={nextCursor} patientId={patient.id} />
+      <HistoryList initialItems={past} initialCursor={nextCursor} patientId={patient.id} />
     </div>
   );
 }
