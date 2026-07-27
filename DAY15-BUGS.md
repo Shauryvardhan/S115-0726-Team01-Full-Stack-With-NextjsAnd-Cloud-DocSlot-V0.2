@@ -6,11 +6,6 @@
 - Load More pagination not tested — fresh account had too few appointments to trigger it.
 
 ## Journey 2 (Shauryvardhan — Doctor Schedule/Dashboard)
-
-
-## Journey 3 (Sohini — RBAC/Validation)
-
-
 1. [Book Appointment page] - Today's date/slots don't appear in the date picker, 
    even though slots exist (confirmed via Prisma Studio) - Expected today to be 
    the first selectable date - Root cause: `today` computed as exact current 
@@ -32,3 +27,7 @@
    (including Prisma Decimal consultationFee field) from Server Component 
    to Client Component - Fixed by mapping to a plain serializable object 
    before passing as props.
+
+## Journey 3 (Sohini — RBAC/Validation)
+
+
