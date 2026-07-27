@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,7 +25,14 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/");
+    const session = await getSession();
+    if (session?.user.role === "DOCTOR") {
+      router.replace("/doctor/dashboard");
+    } else if (session?.user.role === "PATIENT") {
+      router.replace("/patient/dashboard");
+    } else {
+      router.replace("/");
+    }
     router.refresh();
   }
 
