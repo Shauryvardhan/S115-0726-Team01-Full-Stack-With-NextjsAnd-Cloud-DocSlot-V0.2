@@ -29,5 +29,25 @@
    before passing as props.
 
 ## Journey 3 (Sohini — RBAC/Validation)
+5. [Data integrity] - AppointmentSlot.isBooked flag was found out of sync 
+   with actual Appointment records for slots created via early seed 
+   scripts (Day 7-9 testing) - the flag stayed false despite a real 
+   Appointment existing - Root cause: only bookAppointment()'s transaction 
+   correctly sets both; ad-hoc seed scripts created Appointments without 
+   updating the flag - Not a production bug (real bookings always go 
+   through bookAppointment()), but worth noting for anyone writing future 
+   seed/test scripts: check for appointment: null, not isBooked: false.
 
+   6. [Login page] - Wrong copy and dark background — appears to have reused 
+   Register page's wrapper without updating tagline/colors - Fixed by 
+   correcting copy to "Welcome back to DocSlot" and setting explicit 
+   bg-white on the form panel - Owner: Sohini
+
+   7. [Appointment History] - Decimal serialization crash resurfaced on 
+   "Load More" click - Root cause: the earlier fix only sanitized the 
+   first page (fetched in page.tsx), but Load More calls the Server 
+   Action directly from the client, which still returned raw Doctor 
+   objects with Decimal fields - Real fix: changed getAppointmentHistory() 
+   to use Prisma `select` instead of `include`, so Decimal fields are 
+   never fetched at all, fixing every call site including pagination.
 

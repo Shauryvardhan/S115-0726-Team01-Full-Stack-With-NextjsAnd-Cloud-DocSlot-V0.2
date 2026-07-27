@@ -11,9 +11,23 @@ export async function getAppointmentHistory(patientId: string, cursor?: string) 
       skip: 1,
     }),
     orderBy: { createdAt: "desc" },
-    include: {
-      doctor: { include: { user: true } },
-      slot: true,
+    select: {
+      id: true,
+      status: true,
+      reason: true,
+      slot: {
+        select: {
+          date: true,
+          startTime: true,
+        },
+      },
+      doctor: {
+        select: {
+          user: {
+            select: { name: true },
+          },
+        },
+      },
     },
   });
 
