@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { signOut } from "@/lib/auth";
 import { registerSchema, type RegisterInput } from "@/validations/authSchema";
 
 export async function registerUser(input: RegisterInput) {
@@ -36,3 +37,7 @@ export async function registerUser(input: RegisterInput) {
 
   return { success: true, userId: user.id };
 }
+
+export async function handleSignOut() {
+  await signOut({ redirectTo: "/login" });
+}

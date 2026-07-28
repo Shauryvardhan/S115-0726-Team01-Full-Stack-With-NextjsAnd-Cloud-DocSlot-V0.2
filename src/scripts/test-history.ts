@@ -14,7 +14,7 @@ async function main() {
   // Page 1 — no cursor
   const page1 = await getAppointmentHistory(patient.id);
   console.log("\n--- PAGE 1 ---");
-  console.log("Items:", page1.items.map((a) => ({ id: a.id, status: a.status, createdAt: a.createdAt })));
+  console.log("Items:", page1.items.map((a) => ({ id: a.id, status: a.status })));
   console.log("nextCursor:", page1.nextCursor);
 
   if (!page1.nextCursor) {
@@ -25,7 +25,7 @@ async function main() {
   // Page 2 — using cursor from page 1
   const page2 = await getAppointmentHistory(patient.id, page1.nextCursor);
   console.log("\n--- PAGE 2 ---");
-  console.log("Items:", page2.items.map((a) => ({ id: a.id, status: a.status, createdAt: a.createdAt })));
+  console.log("Items:", page2.items.map((a) => ({ id: a.id, status: a.status })));
   console.log("nextCursor:", page2.nextCursor);
 
   // Sanity check — no overlap between the two pages
