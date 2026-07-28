@@ -12,9 +12,10 @@ export default async function DoctorLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session || session.user.role !== "DOCTOR") {
+  if (!session) {
     redirect("/login");
   }
+  if (session.user.role !== "DOCTOR") redirect("/patient/dashboard");
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

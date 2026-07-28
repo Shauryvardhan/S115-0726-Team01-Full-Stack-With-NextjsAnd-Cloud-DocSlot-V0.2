@@ -51,3 +51,9 @@
    to use Prisma `select` instead of `include`, so Decimal fields are 
    never fetched at all, fixing every call site including pagination.
 
+## Day 16 (Aamir — Edge case testing)
+
+- Empty state (Upcoming Visits 0, no past appointments): [describe what you saw]
+- Load More last page: [button disappeared cleanly / stuck — describe]
+- Search page no-results: [worked cleanly / broke]
+- Doctor profile with no bio/qualifications: sections hide cleanly, no bugs

@@ -13,9 +13,10 @@ export default async function PatientLayout({
 }) {
   const session = await auth();
 
-  if (!session || session.user.role !== "PATIENT") {
+  if (!session) {
     redirect("/login");
   }
+  if (session.user.role !== "PATIENT") redirect("/doctor/dashboard");
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
