@@ -57,3 +57,14 @@
 - Load More last page: [button disappeared cleanly / stuck — describe]
 - Search page no-results: [worked cleanly / broke]
 - Doctor profile with no bio/qualifications: sections hide cleanly, no bugs
+
+## Day 17 (Aamir — Edge case testing)
+
+- Login/Logout flow: tested repeatedly, works correctly, no bugs found.
+- Account creation (fresh patient registration): works correctly, no bugs found.
+- Appointment booking (happy path): works correctly, booking succeeds and shows up in appointment history.
+- Doctor "About" section: renders correctly when bio is set; hides cleanly when empty (no "undefined" or broken layout).
+- [BUG] Double-booking same slot: booked two appointments for the exact same slot at the same time — both went through successfully with no warning or error shown. This should not be possible; a slot should only be bookable once. Root cause likely a missing uniqueness check / transaction guard on slot availability at booking time. Needs fix.
+- [BUG] Unresponsive buttons: several buttons across the dashboard and other pages are not clickable / don't trigger any action. Needs a pass tomorrow to identify each broken button and root cause (likely missing onClick handlers, disabled states stuck true, or client/server component boundary issues).
+
+**Status:** Bugs found today will be addressed starting tomorrow.
