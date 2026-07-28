@@ -19,10 +19,13 @@ export async function getAppointmentHistory(patientId: string, cursor?: string) 
         select: {
           date: true,
           startTime: true,
+          endTime: true,
         },
       },
       doctor: {
         select: {
+          id: true,
+          specialization: true,
           user: {
             select: { name: true },
           },
