@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import HistoryList from "@/components/appointment/HistoryList";
 import UpcomingVisits from "@/components/appointment/UpcomingVisits";
 
+export const metadata = { title: "My Appointments — DocSlot" };
+
+
 export default async function AppointmentHistoryPage() {
   const session = await auth();
   const patient = await prisma.patient.findUnique({ where: { userId: session!.user.id } });

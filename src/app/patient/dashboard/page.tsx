@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import Badge from "@/components/shared/Badge";
 
+export const metadata = { title: "Dashboard — DocSlot" };
+
+
 export default async function PatientDashboardPage() {
   const session = await auth();
   const patient = await prisma.patient.findUnique({

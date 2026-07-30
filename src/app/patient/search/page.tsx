@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+export const metadata = { title: "Find Doctors — DocSlot" };
+
+
 const COLORS = [
   "bg-blue-100 text-blue-700",
   "bg-green-100 text-green-700",

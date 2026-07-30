@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import ScheduleGrid from "@/components/doctor/ScheduleGrid";
 
+export const metadata = { title: "Manage Schedule — DocSlot" };
+
+
 export default async function ManageSchedulePage() {
   const session = await auth();
   const doctor = await prisma.doctor.findUnique({ where: { userId: session!.user.id } });
