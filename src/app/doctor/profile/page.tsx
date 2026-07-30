@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import ProfileForm from "@/components/doctor/ProfileForm";
 
+export const metadata = { title: "My Profile — DocSlot" };
+
+
 export default async function DoctorProfilePage() {
   const session = await auth();
   const doctor = await prisma.doctor.findUnique({

@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import DoctorDashboardContent from "@/components/doctor/DoctorDashboardContent";
 
+export const metadata = { title: "Doctor Dashboard — DocSlot" };
+
+
 export default async function DoctorDashboardPage() {
   const session = await auth();
   const doctor = await prisma.doctor.findUnique({
