@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { createWeeklySchedule } from "@/services/scheduleService";
-import { generateSlotsForSchedule, regenerateSlotsForSchedule } from "@/services/slotService";
+import { generateSlotsForSchedule, markTodayUnavailable, regenerateSlotsForSchedule } from "@/services/slotService";
 import { z } from "zod";
 
 const scheduleSchema = z.object({
@@ -38,4 +38,9 @@ export async function updateSchedule(scheduleId: string, input: Partial<z.infer<
   await regenerateSlotsForSchedule(scheduleId);
 
   return { success: true };
+}
+
+export async function blockTodayForDoctor(doctorId: string) {
+  const result = await markTodayUnavailable(doctorId);
+  return { success: true, removedCount: result.count };
 }
