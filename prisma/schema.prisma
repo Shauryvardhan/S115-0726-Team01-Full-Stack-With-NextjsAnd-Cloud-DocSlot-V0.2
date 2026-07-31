@@ -77,17 +77,18 @@ model AppointmentSlot {
 }
 
 model Appointment {
-  id        String            @id @default(cuid())
-  patientId String
-  doctorId  String
-  slotId    String            @unique
-  status    AppointmentStatus @default(CONFIRMED)
-  reason    String?
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  doctor    Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  slot      AppointmentSlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  id                  String            @id @default(cuid())
+  patientId           String
+  doctorId            String
+  slotId              String            @unique
+  status              AppointmentStatus @default(CONFIRMED)
+  reason              String?
+  cancellationReason  String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  doctor              Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient             Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  slot                AppointmentSlot   @relation(fields: [slotId], references: [id], onDelete: Cascade)
 
   @@index([patientId, createdAt])
   @@index([doctorId, createdAt])

@@ -7,7 +7,11 @@ export async function fetchAppointmentHistory(patientId: string, cursor?: string
   return getAppointmentHistory(patientId, cursor);
 }
 
-export async function cancelAppointment(appointmentId: string, patientId: string) {
+export async function cancelAppointment(
+  appointmentId: string,
+  patientId: string,
+  cancellationReason?: string
+) {
   const appointment = await prisma.appointment.findUnique({
     where: { id: appointmentId },
     include: { slot: true },
@@ -27,7 +31,7 @@ export async function cancelAppointment(appointmentId: string, patientId: string
 
   await prisma.appointment.update({
     where: { id: appointmentId },
-    data: { status: "CANCELLED" },
+    data: { status: "CANCELLED", cancellationReason: cancellationReason || null },
   });
 
   return { success: true };

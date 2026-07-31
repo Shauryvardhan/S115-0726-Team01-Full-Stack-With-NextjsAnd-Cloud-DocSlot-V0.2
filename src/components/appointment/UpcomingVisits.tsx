@@ -43,9 +43,11 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   async function handleCancel(id: string) {
-    if (!confirm("Are you sure you want to cancel this appointment?")) return;
+    const reason = window.prompt("Why are you cancelling this appointment? (optional)");
+    if (reason === null) return; // user clicked Cancel on the prompt itself
+
     setCancellingId(id);
-    const res = await cancelAppointment(id, patientId);
+    const res = await cancelAppointment(id, patientId, reason || undefined);
     setCancellingId(null);
     if (res.success) {
       setItems(items.map((i) => (i.id === id ? { ...i, status: "CANCELLED" } : i)));
