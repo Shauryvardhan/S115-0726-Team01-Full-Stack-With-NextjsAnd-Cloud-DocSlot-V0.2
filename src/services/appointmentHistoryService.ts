@@ -45,3 +45,41 @@ export function isCancellable(appointment: { status: string; slot: { date: Date 
   if (appointment.status !== "CONFIRMED") return false;
   return appointment.slot.date >= new Date();
 }
+
+export async function getDoctorAppointmentHistory(doctorId: string, cursor?: string) {
+  const appointments = await prisma.appointment.findMany({
+    where: { doctorId },
+    take: PAGE_SIZE + 1,
+    ...(cursor && {
+      cursor: { id: cursor },
+      skip: 1,
+    }),
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      status: true,
+      reason: true,
+      slot: {
+        select: {
+          date: true,
+          startTime: true,
+          endTime: true,
+        },
+      },
+      patient: {
+        select: {
+          id: true,
+          user: {
+            select: { name: true },
+          },
+        },
+      },
+    },
+  });
+
+  const hasNextPage = appointments.length > PAGE_SIZE;
+  const items = hasNextPage ? appointments.slice(0, PAGE_SIZE) : appointments;
+  const nextCursor = hasNextPage ? items[items.length - 1].id : null;
+
+  return { items, nextCursor };
+}
