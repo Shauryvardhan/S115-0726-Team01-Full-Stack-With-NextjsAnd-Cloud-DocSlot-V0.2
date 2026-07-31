@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getAppointmentHistory, isCancellable } from "@/services/appointmentHistoryService";
+import { getAppointmentHistory, isCancellable, getDoctorAppointmentHistory } from "@/services/appointmentHistoryService";
 
 export async function fetchAppointmentHistory(patientId: string, cursor?: string) {
   return getAppointmentHistory(patientId, cursor);
@@ -31,4 +31,8 @@ export async function cancelAppointment(appointmentId: string, patientId: string
   });
 
   return { success: true };
+}
+
+export async function fetchDoctorAppointmentHistory(doctorId: string, cursor?: string) {
+  return getDoctorAppointmentHistory(doctorId, cursor);
 }
