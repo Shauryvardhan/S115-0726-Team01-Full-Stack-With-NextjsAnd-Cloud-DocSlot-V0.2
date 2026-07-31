@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Badge from "@/components/shared/Badge";
+import { blockTodayForDoctor } from "@/actions/scheduleActions";
 
 type AppointmentItem = {
   id: string;
@@ -22,6 +24,7 @@ type DoctorDashboardContentProps = {
   initialAppointments: AppointmentItem[];
   stats: { booked: number; total: number };
   doctorName: string;
+  doctorId: string;
 };
 
 const MOCK_APPOINTMENTS: AppointmentItem[] = [
@@ -66,9 +69,25 @@ export default function DoctorDashboardContent({
   initialAppointments,
   stats,
   doctorName,
+  doctorId,
 }: DoctorDashboardContentProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [isBlockingToday, setIsBlockingToday] = useState(false);
+
+  async function handleMarkUnavailable() {
+    if (!confirm("Mark all remaining unbooked slots today as unavailable? This can't be undone.")) return;
+
+    setIsBlockingToday(true);
+    try {
+      const result = await blockTodayForDoctor(doctorId);
+      alert(`${result.removedCount} unbooked slot(s) removed for today.`);
+      router.refresh();
+    } finally {
+      setIsBlockingToday(false);
+    }
+  }
 
   // Use mock appointments if none exist for today so dashboard looks rich
   const displayList = initialAppointments.length > 0 ? initialAppointments : MOCK_APPOINTMENTS;
@@ -131,6 +150,13 @@ export default function DoctorDashboardContent({
           <div className="text-xs font-semibold text-gray-600 border border-gray-200 px-3.5 py-2 rounded-lg bg-white shadow-sm whitespace-nowrap">
             Today: {todayStr}
           </div>
+          <button
+            onClick={handleMarkUnavailable}
+            disabled={isBlockingToday}
+            className="rounded-lg bg-red-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isBlockingToday ? "Blocking..." : "Mark Today Unavailable"}
+          </button>
         </div>
       </div>
 

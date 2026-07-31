@@ -32,6 +32,7 @@ export default async function DoctorDashboardPage() {
       initialAppointments={formattedAppointments}
       stats={stats}
       doctorName={doctor.user.name}
+      doctorId={doctor.id}
     />
   );
 }

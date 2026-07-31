@@ -54,3 +54,19 @@ export async function regenerateSlotsForSchedule(scheduleId: string, weeksAhead:
 
   return generateSlotsForSchedule(scheduleId, weeksAhead);
 }
+
+export async function markTodayUnavailable(doctorId: string) {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+  const result = await prisma.appointmentSlot.deleteMany({
+    where: {
+      schedule: { doctorId },
+      isBooked: false,
+      date: { gte: startOfDay, lte: endOfDay },
+    },
+  });
+
+  return { count: result.count };
+}
