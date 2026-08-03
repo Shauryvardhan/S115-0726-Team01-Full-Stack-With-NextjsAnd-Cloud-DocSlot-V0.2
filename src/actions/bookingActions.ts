@@ -50,3 +50,42 @@ export async function bookAppointment(input: BookingInput & { patientId: string;
     throw error;
   }
 }
+
+export async function rescheduleAppointment(
+  appointmentId: string,
+  patientId: string,
+  newSlotId: string
+) {
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+  });
+
+  if (!appointment) return { success: false, error: "Appointment not found" };
+  if (appointment.patientId !== patientId) return { success: false, error: "Not authorized" };
+  if (appointment.status !== "CONFIRMED") return { success: false, error: "Only confirmed appointments can be rescheduled" };
+
+  const newSlot = await prisma.appointmentSlot.findUnique({ where: { id: newSlotId } });
+  if (!newSlot || newSlot.isBooked) {
+    return { success: false, error: "Selected slot is no longer available" };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.appointmentSlot.update({
+        where: { id: appointment.slotId },
+        data: { isBooked: false },
+      });
+      await tx.appointmentSlot.update({
+        where: { id: newSlotId, isBooked: false },
+        data: { isBooked: true },
+      });
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { slotId: newSlotId },
+      });
+    });
+    return { success: true };
+  } catch {
+    return { success: false, error: "This slot was just taken — please pick another" };
+  }
+}
