@@ -195,13 +195,21 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
                         Reschedule
                       </Link>
                     ) : (
-                      <button
-                        onClick={() => handleCancel(a.id)}
-                        disabled={cancellingId === a.id}
-                        className="flex-1 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center disabled:opacity-50"
-                      >
-                        {cancellingId === a.id ? "Cancelling..." : "Cancel"}
-                      </button>
+                      <>
+                        <Link
+                          href={`/patient/book/${a.doctor.id}?reschedule=${a.id}`}
+                          className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center block"
+                        >
+                          Reschedule
+                        </Link>
+                        <button
+                          onClick={() => handleCancel(a.id)}
+                          disabled={cancellingId === a.id}
+                          className="flex-1 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center disabled:opacity-50"
+                        >
+                          {cancellingId === a.id ? "Cancelling..." : "Cancel"}
+                        </button>
+                      </>
                     )
                   )}
                 </div>
