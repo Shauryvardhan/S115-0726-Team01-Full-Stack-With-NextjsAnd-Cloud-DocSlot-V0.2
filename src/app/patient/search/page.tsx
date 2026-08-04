@@ -16,10 +16,9 @@ const COLORS = [
 export default async function SearchDoctorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ specialty?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ specialty?: string; q?: string }>;
 }) {
-  const { specialty, q, page } = await searchParams;
-  const currentPage = parseInt(page || "1", 10);
+  const { specialty, q } = await searchParams;
   const PAGE_SIZE = 6;
 
   const whereClause = {
@@ -33,17 +32,14 @@ export default async function SearchDoctorsPage({
     }),
   };
 
-  const [doctors, totalCount] = await Promise.all([
-    prisma.doctor.findMany({
-      where: whereClause,
-      include: { user: true },
-      skip: (currentPage - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.doctor.count({ where: whereClause }),
-  ]);
+  const doctors = await prisma.doctor.findMany({
+    where: whereClause,
+    include: { user: true },
+    take: PAGE_SIZE + 1,
+  });
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const hasMore = doctors.length > PAGE_SIZE;
+  const visibleDoctors = hasMore ? doctors.slice(0, PAGE_SIZE) : doctors;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -131,7 +127,7 @@ export default async function SearchDoctorsPage({
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {totalCount} Doctor{totalCount !== 1 ? "s" : ""} found
+              {visibleDoctors.length} Doctor{visibleDoctors.length !== 1 ? "s" : ""} found
               {specialty ? ` in ${specialty}` : ""}
             </h1>
           </div>
@@ -147,7 +143,7 @@ export default async function SearchDoctorsPage({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {doctors.map((doctor, index) => {
+          {visibleDoctors.map((doctor, index) => {
             const initial = (doctor.user.name ?? "D").charAt(0).toUpperCase();
             const colorClass = COLORS[index % COLORS.length];
             const rating = (4.2 + (index * 0.15) % 0.8).toFixed(1);
@@ -205,7 +201,7 @@ export default async function SearchDoctorsPage({
           })}
         </div>
 
-        {doctors.length === 0 && (
+        {visibleDoctors.length === 0 && (
           <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth="1.5">
@@ -217,52 +213,11 @@ export default async function SearchDoctorsPage({
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            {currentPage > 1 && (
-              <Link
-                href={`/patient/search?${new URLSearchParams({ ...(specialty ? { specialty } : {}), ...(q ? { q } : {}), page: String(currentPage - 1) }).toString()}`}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
-              >
-                ‹
-              </Link>
-            )}
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const pageNum = i + 1;
-              return (
-                <Link
-                  key={pageNum}
-                  href={`/patient/search?${new URLSearchParams({ ...(specialty ? { specialty } : {}), ...(q ? { q } : {}), page: String(pageNum) }).toString()}`}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === pageNum
-                      ? "bg-blue-600 text-white"
-                      : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="text-gray-400">...</span>
-                <Link
-                  href={`/patient/search?${new URLSearchParams({ ...(specialty ? { specialty } : {}), ...(q ? { q } : {}), page: String(totalPages) }).toString()}`}
-                  className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  {totalPages}
-                </Link>
-              </>
-            )}
-            {currentPage < totalPages && (
-              <Link
-                href={`/patient/search?${new URLSearchParams({ ...(specialty ? { specialty } : {}), ...(q ? { q } : {}), page: String(currentPage + 1) }).toString()}`}
-                className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
-              >
-                ›
-              </Link>
-            )}
+        {hasMore && (
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-500">
+              Showing first {PAGE_SIZE} results — refine your search to narrow down further.
+            </p>
           </div>
         )}
       </div>
