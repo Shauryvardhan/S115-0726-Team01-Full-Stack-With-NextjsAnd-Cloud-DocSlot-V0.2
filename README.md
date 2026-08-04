@@ -84,6 +84,12 @@ prisma/
 
 ## Testing
 
+Run the code-quality checks before opening a pull request:
+
+```bash
+npm run lint
+```
+
 A full backend integration test is available, verifying the complete chain from schedule creation through booking to history/dashboard reflection:
 
 ```bash
