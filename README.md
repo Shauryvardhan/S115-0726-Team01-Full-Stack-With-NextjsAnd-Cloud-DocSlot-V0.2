@@ -6,7 +6,9 @@ A Practo-style doctor appointment booking platform built as part of the Kalvium 
 
 **TEAM01**
 - Shauryvardhan Undre — Slot generation, booking validation, double-booking prevention
+
 - Mohammed Aamir — Appointment history, pagination, doctor search & profile
+
 - Sohini Tandon — Doctor dashboard, RBAC, timezone-safe scheduling logic
 
 ## Tech Stack
@@ -24,11 +26,17 @@ A Practo-style doctor appointment booking platform built as part of the Kalvium 
 ## Features
 
 - Role-based auth (Doctor / Patient) with protected routes
+
 - Doctors define weekly schedules → system auto-generates bookable slots
+
 - Patients search doctors, view profiles, and book appointments
+
 - Field-level form validation (email, phone, required fields)
+
 - Database-level double-booking prevention (transaction-based)
+
 - Paginated appointment history with cancel functionality
+
 - Doctor dashboard showing only today's confirmed appointments by default
 
 ## Getting Started
