@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: docslot
+    runtime: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Set via Render dashboard
+      - key: AUTH_SECRET
+        sync: false  # Set via Render dashboard
+      - key: NODE_ENV
+        value: production
