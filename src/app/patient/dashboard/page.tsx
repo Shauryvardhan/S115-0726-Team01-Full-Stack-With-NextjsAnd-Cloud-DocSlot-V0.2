@@ -200,7 +200,7 @@ export default async function PatientDashboardPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">2 hours ago</p>
-              <button className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1">
+              <button onClick={() => alert("Downloading blood lab results (PDF)...")} className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1" title="Download Results">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
@@ -222,7 +222,7 @@ export default async function PatientDashboardPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">Yesterday</p>
-              <button className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1">
+              <button onClick={() => alert("Viewing prescription details for Lisinopril...")} className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1" title="View Prescription">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -244,7 +244,7 @@ export default async function PatientDashboardPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">Cardiology Visit (₹40.00)</p>
-              <button className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1">
+              <button onClick={() => alert("Downloading receipt for Cardiology Visit Co-pay...")} className="text-gray-400 hover:text-blue-600 cursor-pointer mt-1" title="Download Receipt">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
