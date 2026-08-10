@@ -27,37 +27,6 @@ type DoctorDashboardContentProps = {
   doctorId: string;
 };
 
-const MOCK_APPOINTMENTS: AppointmentItem[] = [
-  {
-    id: "app_88219",
-    patient: { id: "pat_1", user: { name: "Sarah Jenkins" } },
-    slot: { startTime: "10:30 AM", endTime: "11:00 AM" },
-    reason: "Post-op follow up",
-    status: "Waiting",
-  },
-  {
-    id: "app_12440",
-    patient: { id: "pat_2", user: { name: "Robert Chen" } },
-    slot: { startTime: "11:15 AM", endTime: "11:30 AM" },
-    reason: "Blood pressure check",
-    status: "Scheduled",
-  },
-  {
-    id: "app_90012",
-    patient: { id: "pat_3", user: { name: "Michael Scott" } },
-    slot: { startTime: "11:45 AM", endTime: "12:30 PM" },
-    reason: "Chronic fatigue analysis",
-    status: "Scheduled",
-  },
-  {
-    id: "app_77123",
-    patient: { id: "pat_4", user: { name: "Emily Blunt" } },
-    slot: { startTime: "01:30 PM", endTime: "01:50 PM" },
-    reason: "Annual physical exam",
-    status: "Scheduled",
-  },
-];
-
 const AVATAR_COLORS = [
   "bg-blue-100 text-blue-700",
   "bg-green-100 text-green-700",
@@ -75,6 +44,7 @@ export default function DoctorDashboardContent({
   const [searchTerm, setSearchTerm] = useState("");
   const [sessionStarted, setSessionStarted] = useState(false);
   const [isBlockingToday, setIsBlockingToday] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   async function handleMarkUnavailable() {
     if (!confirm("Mark all remaining unbooked slots today as unavailable? This can't be undone.")) return;
@@ -89,18 +59,16 @@ export default function DoctorDashboardContent({
     }
   }
 
-  // Use mock appointments if none exist for today so dashboard looks rich
-  const displayList = initialAppointments.length > 0 ? initialAppointments : MOCK_APPOINTMENTS;
-
-  const filteredList = displayList.filter((a) =>
+  const filteredList = initialAppointments.filter((a) =>
     (a.patient.user.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const bookedCount = stats.booked > 0 ? stats.booked : 12;
-  const totalCount = stats.total > 0 ? stats.total : 16;
-  const progressPercent = Math.min(Math.round((bookedCount / Math.max(totalCount, 1)) * 100), 100);
+  const bookedCount = stats.booked;
+  const totalCount = stats.total;
+  const progressPercent = totalCount > 0 ? Math.min(Math.round((bookedCount / totalCount) * 100), 100) : 0;
 
-  const firstPatient = displayList[0]?.patient.user.name || "Sarah Jenkins";
+  const firstPatient = initialAppointments[0]?.patient.user.name || null;
+  const hasAppointments = initialAppointments.length > 0;
 
   const todayStr = new Date().toLocaleDateString("en-US", {
     month: "short",
@@ -131,17 +99,64 @@ export default function DoctorDashboardContent({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <button className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 relative transition-colors bg-white shadow-sm">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 relative transition-colors bg-white shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
+
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+                <div className="p-3 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                  <span className="font-bold text-sm text-gray-800">Notifications</span>
+                  <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600 text-xs font-semibold">Mark all read</button>
+                </div>
+                <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
+                  <div className="p-4 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => router.push("/doctor/patients")}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-800 font-medium leading-tight">Lab results for Sarah Jenkins</p>
+                        <p className="text-xs text-gray-500 mt-1">Pending your review before session.</p>
+                        <p className="text-[10px] text-gray-400 mt-1.5 font-medium">10 mins ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => router.push("/doctor/schedule")}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-800 font-medium leading-tight">Emergency Alert</p>
+                        <p className="text-xs text-gray-500 mt-1">Schedule conflict at 3:00 PM due to urgent referral.</p>
+                        <p className="text-[10px] text-gray-400 mt-1.5 font-medium">1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-3 border-t border-gray-100 text-center bg-gray-50/50">
+                  <button className="text-blue-600 hover:text-blue-700 text-xs font-semibold">View all notifications</button>
+                </div>
+              </div>
+            )}
+          </div>
           <button className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors bg-white shadow-sm hidden sm:block">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -179,6 +194,7 @@ export default function DoctorDashboardContent({
         </div>
 
         {/* Current Session Banner */}
+        {hasAppointments ? (
         <div className="col-span-1 md:col-span-2 bg-blue-600 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between relative overflow-hidden group">
           {/* Watermark SVG */}
           <svg
@@ -196,7 +212,7 @@ export default function DoctorDashboardContent({
             <h2 className="text-2xl font-bold mb-1.5 leading-tight">Next Patient: {firstPatient}</h2>
             <p className="text-xs text-blue-100 font-medium flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              Arrived 5 mins ago • Room 4B
+              {initialAppointments[0]?.slot.startTime} — {initialAppointments[0]?.slot.endTime}
             </p>
           </div>
 
@@ -204,7 +220,6 @@ export default function DoctorDashboardContent({
             <button
               onClick={() => {
                 setSessionStarted(true);
-                alert(`Starting consultation session with ${firstPatient}...`);
               }}
               className="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-600 font-bold px-6 py-3.5 rounded-xl text-sm flex items-center justify-center gap-2.5 shadow-sm transition-all transform active:scale-95"
             >
@@ -215,6 +230,15 @@ export default function DoctorDashboardContent({
             </button>
           </div>
         </div>
+        ) : (
+        <div className="col-span-1 md:col-span-2 bg-gray-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+          <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h2 className="text-lg font-bold text-gray-600 mb-1">No Appointments Today</h2>
+          <p className="text-xs text-gray-400 font-medium">Your schedule is clear. Enjoy the break!</p>
+        </div>
+        )}
       </div>
 
       {/* Today's Appointments Table */}
@@ -273,7 +297,7 @@ export default function DoctorDashboardContent({
                     <td className="py-4 px-6">
                       <p className="font-bold text-gray-900 text-xs">{a.slot.startTime}</p>
                       <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                        {idx === 0 ? "30 mins session" : idx === 1 ? "15 mins check-up" : idx === 2 ? "45 mins consultation" : "20 mins screening"}
+                        to {a.slot.endTime}
                       </p>
                     </td>
                     <td className="py-4 px-6">
@@ -292,7 +316,7 @@ export default function DoctorDashboardContent({
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button
-                        onClick={() => alert(`Viewing medical history and notes for ${a.patient.user.name}...`)}
+                        onClick={() => router.push("/doctor/patients")}
                         className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors inline-block text-xs font-semibold"
                         title="View Patient Details"
                       >
@@ -309,7 +333,17 @@ export default function DoctorDashboardContent({
           </table>
           {filteredList.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-gray-500 text-sm font-medium">No patients found matching &quot;{searchTerm}&quot;.</p>
+              {searchTerm ? (
+                <p className="text-gray-500 text-sm font-medium">No patients found matching &quot;{searchTerm}&quot;.</p>
+              ) : (
+                <div>
+                  <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-gray-500 text-sm font-semibold mb-1">No appointments today</p>
+                  <p className="text-gray-400 text-xs">Check your schedule page to manage upcoming availability.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -339,7 +373,7 @@ export default function DoctorDashboardContent({
               Lab results for Patient #88219 (Sarah Jenkins) have arrived in the system. Review needed before session.
             </p>
             <button
-              onClick={() => alert("Opening lab results viewer for Sarah Jenkins...")}
+              onClick={() => router.push("/doctor/patients")}
               className="text-blue-600 hover:text-blue-800 text-xs font-bold hover:underline transition-colors"
             >
               Review Results

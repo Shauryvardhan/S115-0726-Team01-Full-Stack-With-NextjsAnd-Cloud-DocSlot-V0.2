@@ -3,8 +3,16 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+if (!authSecret) {
+  throw new Error(
+    "AUTH_SECRET environment variable is not set. " +
+    "Generate one with `npx auth secret` and add it to your .env file."
+  );
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret-change-me",
+  secret: authSecret,
   trustHost: true,
   providers: [
     Credentials({
