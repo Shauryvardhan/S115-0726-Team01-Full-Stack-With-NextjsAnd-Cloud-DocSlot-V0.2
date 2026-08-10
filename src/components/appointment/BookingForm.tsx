@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { bookAppointment } from "@/actions/bookingActions";
+import { bookAppointment, rescheduleAppointment } from "@/actions/bookingActions";
 import { useRouter } from "next/navigation";
 
 type Slot = { id: string; date: Date; startTime: string; endTime: string };
@@ -27,10 +27,12 @@ export default function BookingForm({
   doctorId,
   patientId,
   slotsByDate,
+  rescheduleAppointmentId,
 }: {
   doctorId: string;
   patientId: string;
   slotsByDate: Record<string, Slot[]>;
+  rescheduleAppointmentId?: string;
 }) {
   const router = useRouter();
   const dates = Object.keys(slotsByDate).sort();
@@ -94,16 +96,25 @@ export default function BookingForm({
     setLoading(true);
     setErrors({});
 
-    const result = await bookAppointment({
-      slotId: selectedSlot.id,
-      doctorId,
-      patientId,
-      ...form,
-    });
+    let result;
+    if (rescheduleAppointmentId) {
+      result = await rescheduleAppointment(rescheduleAppointmentId, patientId, selectedSlot.id);
+    } else {
+      result = await bookAppointment({
+        slotId: selectedSlot.id,
+        doctorId,
+        patientId,
+        ...form,
+      });
+    }
 
     setLoading(false);
     if (!result.success) {
-      setErrors(result.errors ?? {});
+      if ("error" in result && typeof result.error === "string") {
+        setErrors({ slotId: [result.error] });
+      } else if ("errors" in result) {
+        setErrors(result.errors ?? {});
+      }
       return;
     }
     router.push("/patient/appointments");
@@ -385,7 +396,7 @@ export default function BookingForm({
               "Booking..."
             ) : (
               <>
-                Confirm Booking
+                {rescheduleAppointmentId ? "Confirm Reschedule" : "Confirm Booking"}
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
