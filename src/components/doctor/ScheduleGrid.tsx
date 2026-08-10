@@ -105,7 +105,6 @@ export default function ScheduleGrid({
       return;
     }
     setShowRecurring(false);
-    alert("Recurring schedule applied successfully!");
     router.refresh();
   }
 
