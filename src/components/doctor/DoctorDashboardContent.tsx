@@ -122,7 +122,7 @@ export default function DoctorDashboardContent({
                   <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600 text-xs font-semibold">Mark all read</button>
                 </div>
                 <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
-                  <div className="p-4 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => alert("Opening lab results...")}>
+                  <div className="p-4 hover:bg-blue-50/30 transition-colors cursor-pointer" onClick={() => router.push("/doctor/patients")}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                         <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,7 +220,6 @@ export default function DoctorDashboardContent({
             <button
               onClick={() => {
                 setSessionStarted(true);
-                alert(`Starting consultation session with ${firstPatient}...`);
               }}
               className="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-600 font-bold px-6 py-3.5 rounded-xl text-sm flex items-center justify-center gap-2.5 shadow-sm transition-all transform active:scale-95"
             >
@@ -317,7 +316,7 @@ export default function DoctorDashboardContent({
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button
-                        onClick={() => alert(`Viewing medical history and notes for ${a.patient.user.name}...`)}
+                        onClick={() => router.push("/doctor/patients")}
                         className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors inline-block text-xs font-semibold"
                         title="View Patient Details"
                       >
@@ -374,7 +373,7 @@ export default function DoctorDashboardContent({
               Lab results for Patient #88219 (Sarah Jenkins) have arrived in the system. Review needed before session.
             </p>
             <button
-              onClick={() => alert("Opening lab results viewer for Sarah Jenkins...")}
+              onClick={() => router.push("/doctor/patients")}
               className="text-blue-600 hover:text-blue-800 text-xs font-bold hover:underline transition-colors"
             >
               Review Results

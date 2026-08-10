@@ -41,6 +41,7 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
   const router = useRouter();
   const [items, setItems] = useState<UpcomingVisitItem[]>(initialItems);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [joinedCallId, setJoinedCallId] = useState<string | null>(null);
 
   async function handleCancel(id: string) {
     const reason = window.prompt("Why are you cancelling this appointment? (optional)");
@@ -168,14 +169,18 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
                   </div>
                 </div>
 
-                {/* Bottom row: Action Buttons */}
                 <div className="flex items-center gap-3 pt-1">
                   {isVideo ? (
                     <button
-                      onClick={() => alert("Joining video consultation room...")}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center shadow-sm"
+                      onClick={() => setJoinedCallId(a.id)}
+                      disabled={joinedCallId === a.id}
+                      className={`flex-1 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center shadow-sm ${
+                        joinedCallId === a.id
+                          ? "bg-green-100 text-green-700 cursor-default"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
                     >
-                      Join Call
+                      {joinedCallId === a.id ? "Waiting for doctor..." : "Join Call"}
                     </button>
                   ) : (
                     <Link
