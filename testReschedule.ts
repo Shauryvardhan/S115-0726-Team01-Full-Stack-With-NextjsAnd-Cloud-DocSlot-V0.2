@@ -24,7 +24,7 @@ async function runTest() {
   // 2. Find an available slot for the same doctor
   const newSlot = await prisma.appointmentSlot.findFirst({
     where: {
-      doctorId: appointment.doctorId,
+      schedule: { doctorId: appointment.doctorId },
       isBooked: false,
     },
   });
