@@ -1,17 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createSchedule } from "@/actions/scheduleActions";
+import { createSchedule, updateSchedule, blockTodayForDoctor } from "@/actions/scheduleActions";
 import { useRouter } from "next/navigation";
-
-const DAYS = [
-  { label: "Mon", date: "12", value: 1 },
-  { label: "Tue", date: "13", value: 2 },
-  { label: "Wed", date: "14", value: 3 },
-  { label: "Thu", date: "15", value: 4 },
-  { label: "Fri", date: "16", value: 5 },
-  { label: "Sat", date: "17", value: 6 },
-];
 
 const HOURS = [
   "08:00",
@@ -27,14 +18,24 @@ const HOURS = [
   "18:00",
 ];
 
+type DayInfo = { label: string; date: string; value: number };
+
 type Schedule = { id: string; dayOfWeek: number; startTime: string; endTime: string; slotDuration: number };
 
 export default function ScheduleGrid({
   doctorId,
   existingSchedules,
+  bookedSlots,
+  weekDays,
+  statsAvailable,
+  statsTotal,
 }: {
   doctorId: string;
   existingSchedules: Schedule[];
+  bookedSlots: Record<string, string>;
+  weekDays: DayInfo[];
+  statsAvailable: number;
+  statsTotal: number;
 }) {
   const router = useRouter();
   const [showRecurring, setShowRecurring] = useState(false);
@@ -44,11 +45,12 @@ export default function ScheduleGrid({
   const [slotDuration, setSlotDuration] = useState(30);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [isBlocking, setIsBlocking] = useState(false);
 
   // Track availability state for grid cells (dayValue -> Set of hour strings)
   const [availableSlots, setAvailableSlots] = useState<Record<number, Set<string>>>(() => {
     const initial: Record<number, Set<string>> = {};
-    DAYS.forEach((d) => {
+    weekDays.forEach((d) => {
       const sched = existingSchedules.find((s) => s.dayOfWeek === d.value);
       const hoursSet = new Set<string>();
       if (sched) {
@@ -71,16 +73,6 @@ export default function ScheduleGrid({
     });
     return initial;
   });
-
-  // Mock booked slots matching the screenshot
-  const bookedSlots: Record<string, string> = {
-    "1-08:00": "BOOKED Patient: J. Doe",
-    "1-11:00": "BOOKED Patient: J. Doe",
-    "3-13:00": "BOOKED Patient: J. Doe",
-    "6-08:00": "BOOKED Patient: J. Doe",
-    "6-10:00": "BOOKED Patient: J. Doe",
-    "6-16:00": "BOOKED Patient: J. Doe",
-  };
 
   function toggleSlot(dayValue: number, hour: string) {
     if (bookedSlots[`${dayValue}-${hour}`]) return; // Cannot toggle booked slots
@@ -116,6 +108,56 @@ export default function ScheduleGrid({
     router.refresh();
   }
 
+  async function handleSaveSchedule() {
+    setSaving(true);
+    setError("");
+
+    try {
+      // Persist availability changes for each day that has an existing schedule
+      for (const day of weekDays) {
+        const sched = existingSchedules.find((s) => s.dayOfWeek === day.value);
+        if (!sched) continue;
+
+        const daySlots = availableSlots[day.value];
+        if (!daySlots || daySlots.size === 0) continue;
+
+        // Compute effective start/end from toggled availability
+        const activeHours = HOURS.filter((h) => daySlots.has(h)).map((h) => parseInt(h.split(":")[0]));
+        if (activeHours.length === 0) continue;
+
+        const newStart = `${String(Math.min(...activeHours)).padStart(2, "0")}:00`;
+        const newEnd = `${String(Math.max(...activeHours)).padStart(2, "0")}:00`;
+
+        if (newStart !== sched.startTime || newEnd !== sched.endTime) {
+          await updateSchedule(sched.id, { startTime: newStart, endTime: newEnd });
+        }
+      }
+
+      router.refresh();
+    } catch {
+      setError("Failed to save schedule changes");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleEmergencyBlock() {
+    if (!confirm("Block all remaining unbooked slots for today? This cannot be undone.")) return;
+    setIsBlocking(true);
+    try {
+      const result = await blockTodayForDoctor(doctorId);
+      alert(`${result.removedCount} unbooked slot(s) removed for today.`);
+      router.refresh();
+    } finally {
+      setIsBlocking(false);
+    }
+  }
+
+  // Compute stats
+  const availablePercent = statsTotal > 0
+    ? Math.round((statsAvailable / statsTotal) * 100)
+    : 0;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
       {/* Left Sidebar Column */}
@@ -141,14 +183,15 @@ export default function ScheduleGrid({
             </button>
 
             <button
-              onClick={() => alert("Emergency block activated for afternoon sessions.")}
-              className="flex items-center justify-between w-full p-3.5 bg-white border border-red-200 rounded-xl hover:bg-red-50/50 transition-all font-semibold text-sm text-red-600 shadow-sm"
+              onClick={handleEmergencyBlock}
+              disabled={isBlocking}
+              className="flex items-center justify-between w-full p-3.5 bg-white border border-red-200 rounded-xl hover:bg-red-50/50 transition-all font-semibold text-sm text-red-600 shadow-sm disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
-                <span>Emergency Block</span>
+                <span>{isBlocking ? "Blocking..." : "Emergency Block"}</span>
               </div>
               <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -168,7 +211,7 @@ export default function ScheduleGrid({
                 onChange={(e) => setSelectedDay(Number(e.target.value))}
                 className="w-full bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium"
               >
-                {DAYS.map((d) => (
+                {weekDays.map((d) => (
                   <option key={d.value} value={d.value}>
                     Every {d.label}
                   </option>
@@ -211,13 +254,15 @@ export default function ScheduleGrid({
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-baseline mb-2">
               <span className="text-sm font-semibold text-gray-700">Slots Available</span>
-              <span className="text-xl font-bold text-blue-900">42/56</span>
+              <span className="text-xl font-bold text-blue-900">{statsAvailable}/{statsTotal}</span>
             </div>
             <div className="w-full bg-blue-200/80 rounded-full h-2 my-3 overflow-hidden">
-              <div className="bg-blue-600 h-2 rounded-full w-[75%]" />
+              <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${availablePercent}%` }} />
             </div>
             <p className="text-xs text-blue-800 font-medium leading-relaxed">
-              Your schedule is 75% open for the coming week.
+              {statsTotal > 0
+                ? `Your schedule is ${availablePercent}% open for the coming week.`
+                : "No slots configured for this week. Use Set Recurring to add availability."}
             </p>
           </div>
         </div>
@@ -247,7 +292,7 @@ export default function ScheduleGrid({
               <thead>
                 <tr>
                   <th className="w-16 p-2 text-center font-normal text-xs text-gray-400"></th>
-                  {DAYS.map((day, i) => (
+                  {weekDays.map((day, i) => (
                     <th key={day.value} className={`p-2.5 text-center ${i === 2 ? "bg-blue-50/50 rounded-t-lg" : ""}`}>
                       <div className="text-xs font-semibold uppercase text-gray-500">{day.label}</div>
                       <div className={`text-base font-bold mt-0.5 ${i === 2 ? "text-blue-600" : "text-gray-900"}`}>
@@ -263,17 +308,17 @@ export default function ScheduleGrid({
                     <td className="p-2 text-right text-xs font-semibold text-gray-400 pr-3 align-top pt-3">
                       {hour}
                     </td>
-                    {DAYS.map((day, i) => {
+                    {weekDays.map((day, i) => {
                       const slotKey = `${day.value}-${hour}`;
-                      const isBooked = bookedSlots[slotKey];
+                      const bookedLabel = bookedSlots[slotKey];
                       const isAvailable = availableSlots[day.value]?.has(hour);
 
                       return (
                         <td key={day.value} className={`p-1 ${i === 2 ? "bg-blue-50/30" : ""}`}>
-                          {isBooked ? (
+                          {bookedLabel ? (
                             <div className="bg-teal-800 text-white p-2 rounded-lg text-left text-[10px] font-semibold flex flex-col justify-center leading-tight shadow-sm min-h-[44px]">
                               <span>BOOKED</span>
-                              <span className="font-normal opacity-90 truncate">{isBooked.replace("BOOKED ", "")}</span>
+                              <span className="font-normal opacity-90 truncate">{bookedLabel}</span>
                             </div>
                           ) : isAvailable ? (
                             <button
@@ -316,10 +361,11 @@ export default function ScheduleGrid({
                 Discard Changes
               </button>
               <button
-                onClick={() => alert("Schedule saved successfully!")}
-                className="flex-1 sm:flex-none px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+                onClick={handleSaveSchedule}
+                disabled={saving}
+                className="flex-1 sm:flex-none px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50"
               >
-                Save Schedule
+                {saving ? "Saving..." : "Save Schedule"}
               </button>
             </div>
           </div>

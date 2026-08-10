@@ -24,6 +24,77 @@ export default async function ManageSchedulePage() {
     slotDuration: s.slotDuration,
   }));
 
+  // --- Compute current week boundaries (Mon-Sat) ---
+  const now = new Date();
+  const jsDay = now.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const diffToMonday = jsDay === 0 ? -6 : 1 - jsDay;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  const saturday = new Date(monday);
+  saturday.setDate(monday.getDate() + 5);
+  saturday.setHours(23, 59, 59, 999);
+
+  // Build dynamic day labels with real dates for Mon(1)-Sat(6)
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekDays = dayLabels.map((label, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return { label, date: String(d.getDate()), value: i + 1 };
+  });
+
+  // --- Fetch real booked slots for this week ---
+  const bookedAppointmentSlots = await prisma.appointmentSlot.findMany({
+    where: {
+      schedule: { doctorId: doctor.id },
+      date: { gte: monday, lte: saturday },
+      isBooked: true,
+    },
+    include: {
+      appointment: {
+        include: {
+          patient: { include: { user: { select: { name: true } } } },
+        },
+      },
+      schedule: { select: { dayOfWeek: true } },
+    },
+  });
+
+  // Shape as Record<"dayOfWeek-HH:MM", "Patient: FirstInitial. Last">
+  const bookedSlots: Record<string, string> = {};
+  for (const slot of bookedAppointmentSlots) {
+    const key = `${slot.schedule.dayOfWeek}-${slot.startTime}`;
+    const patientName = slot.appointment?.patient?.user?.name;
+    if (patientName) {
+      const parts = patientName.split(" ");
+      const display = parts.length > 1
+        ? `${parts[0][0]}. ${parts.slice(1).join(" ")}`
+        : patientName;
+      bookedSlots[key] = `Patient: ${display}`;
+    } else {
+      bookedSlots[key] = "Patient: Unknown";
+    }
+  }
+
+  // --- Compute real stats for the week ---
+  const totalSlotsThisWeek = await prisma.appointmentSlot.count({
+    where: {
+      schedule: { doctorId: doctor.id },
+      date: { gte: monday, lte: saturday },
+    },
+  });
+
+  const bookedSlotsThisWeek = await prisma.appointmentSlot.count({
+    where: {
+      schedule: { doctorId: doctor.id },
+      date: { gte: monday, lte: saturday },
+      isBooked: true,
+    },
+  });
+
+  const availableSlotsThisWeek = totalSlotsThisWeek - bookedSlotsThisWeek;
+
   return (
     <div className="max-w-6xl mx-auto py-2">
       {/* Top bar with title, Week/Month toggle, and actions */}
@@ -56,7 +127,14 @@ export default async function ManageSchedulePage() {
         </div>
       </div>
 
-      <ScheduleGrid doctorId={doctor.id} existingSchedules={formattedSchedules} />
+      <ScheduleGrid
+        doctorId={doctor.id}
+        existingSchedules={formattedSchedules}
+        bookedSlots={bookedSlots}
+        weekDays={weekDays}
+        statsAvailable={availableSlotsThisWeek}
+        statsTotal={totalSlotsThisWeek}
+      />
     </div>
   );
 }
