@@ -27,37 +27,6 @@ type DoctorDashboardContentProps = {
   doctorId: string;
 };
 
-const MOCK_APPOINTMENTS: AppointmentItem[] = [
-  {
-    id: "app_88219",
-    patient: { id: "pat_1", user: { name: "Sarah Jenkins" } },
-    slot: { startTime: "10:30 AM", endTime: "11:00 AM" },
-    reason: "Post-op follow up",
-    status: "Waiting",
-  },
-  {
-    id: "app_12440",
-    patient: { id: "pat_2", user: { name: "Robert Chen" } },
-    slot: { startTime: "11:15 AM", endTime: "11:30 AM" },
-    reason: "Blood pressure check",
-    status: "Scheduled",
-  },
-  {
-    id: "app_90012",
-    patient: { id: "pat_3", user: { name: "Michael Scott" } },
-    slot: { startTime: "11:45 AM", endTime: "12:30 PM" },
-    reason: "Chronic fatigue analysis",
-    status: "Scheduled",
-  },
-  {
-    id: "app_77123",
-    patient: { id: "pat_4", user: { name: "Emily Blunt" } },
-    slot: { startTime: "01:30 PM", endTime: "01:50 PM" },
-    reason: "Annual physical exam",
-    status: "Scheduled",
-  },
-];
-
 const AVATAR_COLORS = [
   "bg-blue-100 text-blue-700",
   "bg-green-100 text-green-700",
@@ -89,18 +58,16 @@ export default function DoctorDashboardContent({
     }
   }
 
-  // Use mock appointments if none exist for today so dashboard looks rich
-  const displayList = initialAppointments.length > 0 ? initialAppointments : MOCK_APPOINTMENTS;
-
-  const filteredList = displayList.filter((a) =>
+  const filteredList = initialAppointments.filter((a) =>
     (a.patient.user.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const bookedCount = stats.booked > 0 ? stats.booked : 12;
-  const totalCount = stats.total > 0 ? stats.total : 16;
-  const progressPercent = Math.min(Math.round((bookedCount / Math.max(totalCount, 1)) * 100), 100);
+  const bookedCount = stats.booked;
+  const totalCount = stats.total;
+  const progressPercent = totalCount > 0 ? Math.min(Math.round((bookedCount / totalCount) * 100), 100) : 0;
 
-  const firstPatient = displayList[0]?.patient.user.name || "Sarah Jenkins";
+  const firstPatient = initialAppointments[0]?.patient.user.name || null;
+  const hasAppointments = initialAppointments.length > 0;
 
   const todayStr = new Date().toLocaleDateString("en-US", {
     month: "short",
@@ -179,6 +146,7 @@ export default function DoctorDashboardContent({
         </div>
 
         {/* Current Session Banner */}
+        {hasAppointments ? (
         <div className="col-span-1 md:col-span-2 bg-blue-600 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between relative overflow-hidden group">
           {/* Watermark SVG */}
           <svg
@@ -196,7 +164,7 @@ export default function DoctorDashboardContent({
             <h2 className="text-2xl font-bold mb-1.5 leading-tight">Next Patient: {firstPatient}</h2>
             <p className="text-xs text-blue-100 font-medium flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              Arrived 5 mins ago • Room 4B
+              {initialAppointments[0]?.slot.startTime} — {initialAppointments[0]?.slot.endTime}
             </p>
           </div>
 
@@ -215,6 +183,15 @@ export default function DoctorDashboardContent({
             </button>
           </div>
         </div>
+        ) : (
+        <div className="col-span-1 md:col-span-2 bg-gray-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+          <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h2 className="text-lg font-bold text-gray-600 mb-1">No Appointments Today</h2>
+          <p className="text-xs text-gray-400 font-medium">Your schedule is clear. Enjoy the break!</p>
+        </div>
+        )}
       </div>
 
       {/* Today's Appointments Table */}
@@ -273,7 +250,7 @@ export default function DoctorDashboardContent({
                     <td className="py-4 px-6">
                       <p className="font-bold text-gray-900 text-xs">{a.slot.startTime}</p>
                       <p className="text-[11px] text-gray-400 font-medium mt-0.5">
-                        {idx === 0 ? "30 mins session" : idx === 1 ? "15 mins check-up" : idx === 2 ? "45 mins consultation" : "20 mins screening"}
+                        to {a.slot.endTime}
                       </p>
                     </td>
                     <td className="py-4 px-6">
@@ -309,7 +286,17 @@ export default function DoctorDashboardContent({
           </table>
           {filteredList.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-gray-500 text-sm font-medium">No patients found matching &quot;{searchTerm}&quot;.</p>
+              {searchTerm ? (
+                <p className="text-gray-500 text-sm font-medium">No patients found matching &quot;{searchTerm}&quot;.</p>
+              ) : (
+                <div>
+                  <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-gray-500 text-sm font-semibold mb-1">No appointments today</p>
+                  <p className="text-gray-400 text-xs">Check your schedule page to manage upcoming availability.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
