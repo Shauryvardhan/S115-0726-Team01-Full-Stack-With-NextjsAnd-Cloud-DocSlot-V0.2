@@ -27,13 +27,6 @@ export default async function PatientSettingsPage() {
           email: patient.user.email,
           phone: patient.user.phone,
           gender: patient.gender,
-          bloodGroup: patient.bloodGroup,
-          emergencyContactName: patient.emergencyContactName,
-          emergencyContactRelation: patient.emergencyContactRelation,
-          emergencyContactPhone: patient.emergencyContactPhone,
-          allergies: patient.allergies,
-          emailReminders: patient.emailReminders,
-          smsAlerts: patient.smsAlerts,
         }}
       />
     </div>

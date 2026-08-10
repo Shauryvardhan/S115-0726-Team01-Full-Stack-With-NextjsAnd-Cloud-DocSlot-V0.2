@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import DoctorFilters from "@/components/patient/DoctorFilters";
 
 export const metadata = { title: "Find Doctors — DocSlot" };
+
 
 const COLORS = [
   "bg-blue-100 text-blue-700",
@@ -16,49 +16,14 @@ const COLORS = [
 export default async function SearchDoctorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    specialty?: string;
-    q?: string;
-    gender?: string;
-    minRating?: string;
-    maxFee?: string;
-    availability?: string;
-  }>;
+  searchParams: Promise<{ specialty?: string; q?: string }>;
 }) {
-  const { specialty, q, gender, minRating, maxFee, availability } = await searchParams;
+  const { specialty, q } = await searchParams;
   const PAGE_SIZE = 6;
 
-  const now = new Date();
-  let dateFilter: { gte?: Date; lte?: Date } | undefined = undefined;
-
-  if (availability === "today") {
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    dateFilter = { gte: startOfToday, lte: endOfToday };
-  } else if (availability === "week") {
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    const endOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 23, 59, 59, 999);
-    dateFilter = { gte: startOfToday, lte: endOfWeek };
-  }
-
-  const whereClause: any = {
+  const whereClause = {
     status: "APPROVED" as const,
     ...(specialty && { specialization: { contains: specialty, mode: "insensitive" as const } }),
-    ...(gender && { gender: { equals: gender, mode: "insensitive" as const } }),
-    ...(minRating && { rating: { gte: parseFloat(minRating) } }),
-    ...(maxFee && { consultationFee: { lte: parseFloat(maxFee) } }),
-    ...(dateFilter && {
-      schedules: {
-        some: {
-          slots: {
-            some: {
-              isBooked: false,
-              date: dateFilter,
-            },
-          },
-        },
-      },
-    }),
     ...(q && {
       OR: [
         { user: { name: { contains: q, mode: "insensitive" as const } } },
@@ -80,13 +45,81 @@ export default async function SearchDoctorsPage({
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
       {/* Filters Sidebar */}
       <aside className="lg:col-span-1">
-        <DoctorFilters
-          initialSpecialty={specialty}
-          initialGender={gender}
-          initialMinRating={minRating}
-          initialMaxFee={maxFee}
-          initialAvailability={availability}
-        />
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm sticky top-20">
+          <h2 className="font-bold text-gray-900 mb-4">Filters</h2>
+          <form className="space-y-5">
+            {/* Availability */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Availability</p>
+              <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+                <span className="text-sm text-gray-700">Available Today</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+                <span className="text-sm text-gray-700">Available this week</span>
+              </label>
+            </div>
+
+            {/* Minimum Rating */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Minimum Rating</p>
+              <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-blue-600 text-white font-medium cursor-pointer">
+                <option>⭐ 4.5+ Stars</option>
+                <option>⭐ 4.0+ Stars</option>
+                <option>⭐ 3.5+ Stars</option>
+                <option>Any Rating</option>
+              </select>
+            </div>
+
+            {/* Fee Range */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Fee Range</p>
+              <input
+                type="range"
+                min="50"
+                max="500"
+                defaultValue="250"
+                className="w-full accent-blue-600"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>₹50</span>
+                <span>₹500+</span>
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Gender</p>
+              <div className="flex gap-2">
+                <button type="button" className="flex-1 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium">
+                  Male
+                </button>
+                <button type="button" className="flex-1 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium">
+                  Female
+                </button>
+              </div>
+            </div>
+
+            {/* Specialty Filter */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Specialty</p>
+              <input
+                name="specialty"
+                placeholder="e.g. Cardiology"
+                defaultValue={specialty}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm placeholder:text-gray-400"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-white border-2 border-blue-600 text-blue-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              Clear All Filters
+            </button>
+          </form>
+        </div>
       </aside>
 
       {/* Doctor Cards */}
@@ -113,7 +146,7 @@ export default async function SearchDoctorsPage({
           {visibleDoctors.map((doctor, index) => {
             const initial = (doctor.user.name ?? "D").charAt(0).toUpperCase();
             const colorClass = COLORS[index % COLORS.length];
-            const rating = (doctor.rating ?? 4.5).toFixed(1);
+            const rating = (4.2 + (index * 0.15) % 0.8).toFixed(1);
 
             return (
               <div

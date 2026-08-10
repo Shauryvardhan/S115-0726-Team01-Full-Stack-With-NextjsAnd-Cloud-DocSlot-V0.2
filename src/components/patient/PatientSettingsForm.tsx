@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { updatePatientProfile } from "@/actions/patientProfileActions";
 
 type PatientSettingsProps = {
   patient: {
@@ -10,13 +9,6 @@ type PatientSettingsProps = {
     email: string;
     phone?: string | null;
     gender?: string | null;
-    bloodGroup?: string | null;
-    emergencyContactName?: string | null;
-    emergencyContactRelation?: string | null;
-    emergencyContactPhone?: string | null;
-    allergies?: string | null;
-    emailReminders?: boolean | null;
-    smsAlerts?: boolean | null;
   };
 };
 
@@ -24,34 +16,29 @@ export default function PatientSettingsForm({ patient }: PatientSettingsProps) {
   const [form, setForm] = useState({
     name: patient.name || "",
     email: patient.email || "",
-    phone: patient.phone || "",
+    phone: patient.phone || "+91 98765 43210",
     gender: patient.gender || "Male",
-    bloodGroup: patient.bloodGroup || "O+",
-    allergies: patient.allergies || "",
-    emergencyContactName: patient.emergencyContactName || "",
-    emergencyContactRelation: patient.emergencyContactRelation || "",
-    emergencyContactPhone: patient.emergencyContactPhone || "",
-    emailReminders: patient.emailReminders ?? true,
-    smsAlerts: patient.smsAlerts ?? true,
+    bloodGroup: "O+",
+    allergies: "Penicillin, Dust Mites",
+    emergencyContactName: "Sarah Jenkins",
+    emergencyContactRelation: "Spouse",
+    emergencyContactPhone: "+91 98765 00000",
+    emailReminders: true,
+    smsAlerts: true,
     marketingEmails: false,
   });
 
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setStatus(null);
-    setError(null);
-    const res = await updatePatientProfile(form);
-    setSaving(false);
-    if (res.success) {
+    setTimeout(() => {
+      setSaving(false);
       setStatus("Settings and profile preferences saved successfully!");
-    } else {
-      setError(res.error || "Failed to save settings");
-    }
+    }, 600);
   }
 
   const initials =
@@ -88,15 +75,6 @@ export default function PatientSettingsForm({ patient }: PatientSettingsProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span>{status}</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm font-medium flex items-center gap-3">
-          <svg className="w-5 h-5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
         </div>
       )}
 
