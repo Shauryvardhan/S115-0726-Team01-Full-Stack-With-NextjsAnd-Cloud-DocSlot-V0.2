@@ -58,7 +58,7 @@ export default function ScheduleGrid({
         const endH = parseInt(sched.endTime.split(":")[0]);
         HOURS.forEach((h) => {
           const hourNum = parseInt(h.split(":")[0]);
-          if (hourNum >= startH && hourNum <= endH) {
+          if (hourNum >= startH && hourNum < endH) {
             hoursSet.add(h);
           }
         });
@@ -126,7 +126,7 @@ export default function ScheduleGrid({
         if (activeHours.length === 0) continue;
 
         const newStart = `${String(Math.min(...activeHours)).padStart(2, "0")}:00`;
-        const newEnd = `${String(Math.max(...activeHours)).padStart(2, "0")}:00`;
+        const newEnd = `${String(Math.max(...activeHours) + 1).padStart(2, "0")}:00`;
 
         if (newStart !== sched.startTime || newEnd !== sched.endTime) {
           await updateSchedule(sched.id, { startTime: newStart, endTime: newEnd });
@@ -134,6 +134,7 @@ export default function ScheduleGrid({
       }
 
       router.refresh();
+      alert("Schedule saved successfully!");
     } catch {
       setError("Failed to save schedule changes");
     } finally {
