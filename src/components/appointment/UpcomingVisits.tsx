@@ -41,7 +41,6 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
   const router = useRouter();
   const [items, setItems] = useState<UpcomingVisitItem[]>(initialItems);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [joinedCallId, setJoinedCallId] = useState<string | null>(null);
 
   async function handleCancel(id: string) {
     const reason = window.prompt("Why are you cancelling this appointment? (optional)");
@@ -88,7 +87,6 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((a, idx) => {
-            const isVideo = idx % 2 === 1;
             const initials =
               a.doctor.user.name
                 ?.split(" ")
@@ -149,73 +147,39 @@ export default function UpcomingVisits({ initialItems, patientId }: UpcomingVisi
                     </div>
 
                     <div className="flex items-center gap-2.5">
-                      {isVideo ? (
-                        <>
-                          <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          <span className="font-medium text-blue-600">Video Consultation</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span>St. Mary&apos;s Health Center, Wing B</span>
-                        </>
-                      )}
+                      <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>St. Mary&apos;s Health Center, Wing B</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-1">
-                  {isVideo ? (
-                    <button
-                      onClick={() => setJoinedCallId(a.id)}
-                      disabled={joinedCallId === a.id}
-                      className={`flex-1 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center shadow-sm ${
-                        joinedCallId === a.id
-                          ? "bg-green-100 text-green-700 cursor-default"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                    >
-                      {joinedCallId === a.id ? "Waiting for doctor..." : "Join Call"}
-                    </button>
-                  ) : (
-                    <Link
-                      href={`/patient/doctors/${a.doctor.id}`}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center shadow-sm block"
-                    >
-                      View Details
-                    </Link>
-                  )}
+                  <Link
+                    href={`/patient/doctors/${a.doctor.id}`}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center shadow-sm block"
+                  >
+                    View Details
+                  </Link>
 
                   {a.status === "CONFIRMED" && (
-                    isVideo ? (
+                    <>
                       <Link
-                        href={`/patient/book/${a.doctor.id}`}
+                        href={`/patient/book/${a.doctor.id}?reschedule=${a.id}`}
                         className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center block"
                       >
                         Reschedule
                       </Link>
-                    ) : (
-                      <>
-                        <Link
-                          href={`/patient/book/${a.doctor.id}?reschedule=${a.id}`}
-                          className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center block"
-                        >
-                          Reschedule
-                        </Link>
-                        <button
-                          onClick={() => handleCancel(a.id)}
-                          disabled={cancellingId === a.id}
-                          className="flex-1 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center disabled:opacity-50"
-                        >
-                          {cancellingId === a.id ? "Cancelling..." : "Cancel"}
-                        </button>
-                      </>
-                    )
+                      <button
+                        onClick={() => handleCancel(a.id)}
+                        disabled={cancellingId === a.id}
+                        className="flex-1 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold py-2.5 px-3 rounded-lg transition-colors text-center disabled:opacity-50"
+                      >
+                        {cancellingId === a.id ? "Cancelling..." : "Cancel"}
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

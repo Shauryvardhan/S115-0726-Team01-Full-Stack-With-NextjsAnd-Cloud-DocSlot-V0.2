@@ -7,10 +7,14 @@ import Footer from "@/components/shared/Footer";
 
 export default async function BookAppointmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ doctorId: string }>;
+  searchParams: Promise<{ reschedule?: string }>;
 }) {
   const { doctorId } = await params;
+  const resolvedSearchParams = await searchParams;
+  const rescheduleAppointmentId = resolvedSearchParams.reschedule;
 
   const session = await auth();
   if (!session) redirect("/login");
@@ -66,7 +70,12 @@ export default async function BookAppointmentPage({
           Schedule your visit with Dr. {doctor.user.name} • {doctor.specialization}
         </p>
 
-        <BookingForm doctorId={doctorId} patientId={patient.id} slotsByDate={slotsByDate} />
+        <BookingForm
+          doctorId={doctorId}
+          patientId={patient.id}
+          slotsByDate={slotsByDate}
+          rescheduleAppointmentId={rescheduleAppointmentId}
+        />
       </div>
       <Footer />
     </div>
