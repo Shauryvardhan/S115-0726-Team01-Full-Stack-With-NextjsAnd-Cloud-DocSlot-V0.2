@@ -27,8 +27,6 @@ model Doctor {
   qualifications  String?
   bio             String?
   consultationFee Decimal       @db.Decimal(10, 2)
-  gender          String?
-  rating          Float         @default(4.5)
   status          DoctorStatus  @default(PENDING)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -38,21 +36,14 @@ model Doctor {
 }
 
 model Patient {
-  id                       String        @id @default(cuid())
-  userId                   String        @unique
-  dateOfBirth              DateTime?
-  gender                   String?
-  bloodGroup               String?
-  emergencyContactName     String?
-  emergencyContactRelation String?
-  emergencyContactPhone    String?
-  allergies                String?
-  emailReminders           Boolean?      @default(true)
-  smsAlerts                Boolean?      @default(true)
-  createdAt                DateTime      @default(now())
-  updatedAt                DateTime      @updatedAt
-  appointments             Appointment[]
-  user                     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  dateOfBirth  DateTime?
+  gender       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Schedule {
